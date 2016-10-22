@@ -29,8 +29,6 @@ public class RoutineRecognizeService extends IntentService {
         super.onCreate();
     }
 
-
-
     @Override
     protected void onHandleIntent(Intent intent) {
         // if intent contains activity recognizition data, then
@@ -46,8 +44,14 @@ public class RoutineRecognizeService extends IntentService {
     private void handleDetectedActivities(List<DetectedActivity> probableActivities) {
         for (DetectedActivity activity : probableActivities) {
             int confidence = activity.getConfidence();
+            if (confidence > 50) {
             mDetector.onDetected(activity.getType(), confidence);
+            }
         }
+    }
+
+    private void showToast(String msg, int confidence) {
+        mHandler.post(new DisplayToast(msg, confidence));
     }
 
     class DisplayToast implements Runnable {
@@ -65,9 +69,5 @@ public class RoutineRecognizeService extends IntentService {
             if (confidence > 40)
                 Toast.makeText(RoutineRecognizeService.this, msg, Toast.LENGTH_SHORT).show();
         }
-    }
-
-    private void showToast(String msg, int confidence) {
-        mHandler.post(new DisplayToast(msg, confidence));
     }
 }
