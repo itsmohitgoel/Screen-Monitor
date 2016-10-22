@@ -8,6 +8,7 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.Toast;
 
+import com.facebook.stetho.Stetho;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.ActivityRecognition;
@@ -34,6 +35,12 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         // Connect to Google Play Services
         mApiClient.connect();
 
+        //Implement Stetho library
+        Stetho.InitializerBuilder initializerBuilder = Stetho.newInitializerBuilder(this);
+        initializerBuilder.enableWebKitInspector(Stetho.defaultInspectorModulesProvider(this));
+        initializerBuilder.enableDumpapp(Stetho.defaultDumperPluginsProvider(this));
+        Stetho.Initializer initializer = initializerBuilder.build();
+        Stetho.initialize(initializer);
     }
 
     @Override
@@ -49,7 +56,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
         ActivityRecognition.ActivityRecognitionApi.requestActivityUpdates(mApiClient, MONITOR_INTERVAL, pIntent);
 
-       //  mApiClient.disconnect();
+        //  mApiClient.disconnect();
 
     }
 
@@ -61,6 +68,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
 
-        Toast.makeText(getApplicationContext(),"Fail",Toast.LENGTH_SHORT).show();
+        Toast.makeText(getApplicationContext(), "Fail", Toast.LENGTH_SHORT).show();
     }
 }
