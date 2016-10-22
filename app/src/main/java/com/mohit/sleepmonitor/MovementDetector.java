@@ -3,7 +3,6 @@ package com.mohit.sleepmonitor;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.preference.PreferenceManager;
 
@@ -105,10 +104,7 @@ public class MovementDetector {
     }
 
 
-    private void queryMovements() {
-        SQLiteDatabase db = mOpenHelper.getReadableDatabase();
-        Cursor cursor = db.query(MovementEntry.TABLE_NAME, null, null, null, null, null, null);
-    }
+
 
     private void deleteHistory() {
         SQLiteDatabase db = mOpenHelper.getWritableDatabase();
