@@ -10,8 +10,6 @@ import com.google.android.gms.location.DetectedActivity;
 import com.mohit.sleepmonitor.data.SleepMonitorContract.MovementEntry;
 import com.mohit.sleepmonitor.data.SleepMonitorDbHelper;
 
-import java.util.ArrayList;
-
 /**
  * Created by Mohit on 22-10-2016.
  */
@@ -121,31 +119,5 @@ public class MovementDetector {
         SharedPreferences.Editor editor = sp.edit();
         editor.putInt(mContext.getString(R.string.movement_key), motionRowID)
                 .putLong(mContext.getString(R.string.start_time), startTime).commit();
-    }
-
-    private void dummyDataInsert() {
-        SQLiteDatabase db = mOpenHelper.getWritableDatabase();
-        ArrayList<ContentValues> cvArray = new ArrayList<>();
-        long moveStartTime = 1477195644;
-        long moveEndTime = 1477195744;
-
-        for (int i = 0; i < 10; i++) {
-            ContentValues cv = new ContentValues();
-            int duration = (int) (moveEndTime - moveStartTime);
-
-            cv.put(MovementEntry.COLUMN_DATE, moveStartTime);
-            cv.put(MovementEntry.COLUMN_START, moveStartTime);
-            cv.put(MovementEntry.COLUMN_END, moveEndTime);
-            cv.put(MovementEntry.COLUMN_DURATION, duration);
-            cvArray.add(cv);
-
-            moveStartTime = moveStartTime + 500;
-            moveEndTime = moveStartTime + 500;
-
-        }
-
-        for (ContentValues cv : cvArray) {
-            long _id = db.insert(MovementEntry.TABLE_NAME, null, cv);
-        }
     }
 }
