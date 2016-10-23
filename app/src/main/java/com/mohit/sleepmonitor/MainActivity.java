@@ -10,6 +10,8 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.widget.LinearLayout;
 import android.widget.Toast;
@@ -20,6 +22,9 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.ActivityRecognition;
 import com.mohit.sleepmonitor.Graph.PieGraph;
 import com.mohit.sleepmonitor.Graph.PieSection;
+import com.mohit.sleepmonitor.adapter.MovementAdapter;
+import com.mohit.sleepmonitor.bean.MovementItem;
+import com.mohit.sleepmonitor.data.SleepMonitorContract.MovementEntry;
 import com.mohit.sleepmonitor.data.SleepMonitorDbHelper;
 
 import org.achartengine.GraphicalView;
@@ -32,6 +37,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     public static final int MONITOR_INTERVAL = 1000 * 60;
     private GoogleApiClient mApiClient; // hold reference to api client
     private ArrayList<PieSection> mDataList;
+
+    private RecyclerView mRecycleView;
+    private RecyclerView.Adapter mAdapter;
+    private RecyclerView.LayoutManager mLayoutManager;
+    private ArrayList<MovementItem> mMovementDataList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,16 +74,21 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             LinearLayout linearLayout = (LinearLayout) findViewById(R.id.chart_pie);
             linearLayout.addView(graphicalView);
         }
-    }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-    }
+        mRecycleView = (RecyclerView) findViewById(R.id.recycler_view_movements);
+        mRecycleView.setHasFixedSize(true);
 
-    @Override
-    protected void onResume() {
-        super.onResume();
+        mLayoutManager = new LinearLayoutManager(this);
+        mRecycleView.setLayoutManager(mLayoutManager);
+
+
+        getTabularData();
+        if (mMovementDataList != null && mMovementDataList.size() > 0) {
+            mAdapter = new MovementAdapter(this, mMovementDataList);
+            mRecycleView.setAdapter(mAdapter);
+        } else {
+            Toast.makeText(this, "no data available yet", Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override
@@ -83,19 +98,14 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         PendingIntent pIntent = PendingIntent.getService(MainActivity.this, REQUEST_ROUTINE_SERVICE, regularIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         ActivityRecognition.ActivityRecognitionApi.requestActivityUpdates(mApiClient, MONITOR_INTERVAL, pIntent);
-
-        //  mApiClient.disconnect();
-
     }
 
     @Override
     public void onConnectionSuspended(int i) {
-
     }
 
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-
         Toast.makeText(getApplicationContext(), "Fail", Toast.LENGTH_SHORT).show();
     }
 
@@ -107,17 +117,17 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         SQLiteOpenHelper openHelper = new SleepMonitorDbHelper(this);
         SQLiteDatabase db = openHelper.getReadableDatabase();
 
-        long availaibleDuration = 9 *60 * 60 ;
+        long availaibleDuration = 9 * 60 * 60;
 
         Cursor c = db.rawQuery("select sum(duration) from movement where end <> 0  ;", null);
         int movementDuration = -1;
-        if(c.moveToFirst())
+        if (c.moveToFirst())
             movementDuration = c.getInt(0);
         else
             movementDuration = -1;
         c.close();
 
-        long disturbanceInterval = (availaibleDuration - movementDuration)  ;
+        long disturbanceInterval = (availaibleDuration - movementDuration);
 
         int disturbancePercent = (int) ((movementDuration * 100) / availaibleDuration);
         int effectivePercent = 100 - disturbancePercent;
@@ -132,4 +142,35 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         Log.i("MainActivity", "total: movement in sec - " + movementDuration);
     }
 
+    private void getTabularData() {
+        SQLiteOpenHelper openHelper = new SleepMonitorDbHelper(this);
+        SQLiteDatabase db = openHelper.getReadableDatabase();
+
+        mMovementDataList = new ArrayList<>();
+        // Add Header Row in datalist
+        MovementItem headerItem = new MovementItem();
+        headerItem.setId("ID");
+        headerItem.setStartTime("Start Time");
+        headerItem.setEndTime("End Time");
+        headerItem.setDuration("Duration");
+        mMovementDataList.add(headerItem);
+
+        Cursor c = db.query(MovementEntry.TABLE_NAME, null, null, null, null, null, null);
+        int idxRowID = c.getColumnIndex(MovementEntry._ID);
+        int idxStartTime = c.getColumnIndex(MovementEntry.COLUMN_START);
+        int idxEndTime = c.getColumnIndex(MovementEntry.COLUMN_END);
+        int idxDuration = c.getColumnIndex(MovementEntry.COLUMN_DURATION);
+
+        if (c.getCount() > 0) {
+            while (c.moveToNext()) {
+                MovementItem item = new MovementItem();
+                item.setId(c.getString(idxRowID));
+                item.setStartTime(c.getString(idxStartTime));
+                item.setEndTime(c.getString(idxEndTime));
+                item.setDuration(c.getString(idxDuration));
+
+                mMovementDataList.add(item);
+            }
+        }
+    }
 }
