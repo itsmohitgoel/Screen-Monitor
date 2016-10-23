@@ -34,7 +34,7 @@ public class MovementItem {
     }
 
     public String getDuration() {
-        return duration;
+        return duration + " min";
     }
 
     public void setDuration(String duration) {

@@ -10,6 +10,8 @@ import com.google.android.gms.location.DetectedActivity;
 import com.mohit.sleepmonitor.data.SleepMonitorContract.MovementEntry;
 import com.mohit.sleepmonitor.data.SleepMonitorDbHelper;
 
+import java.util.ArrayList;
+
 /**
  * Created by Mohit on 22-10-2016.
  */
@@ -29,6 +31,7 @@ public class MovementDetector {
     /**
      * Callback method, which on receiving activity of (confidence > 50)
      * will perform the required action
+     *
      * @param movementType
      * @param confidence
      */
@@ -65,6 +68,7 @@ public class MovementDetector {
 
     /**
      * Helper method to insert movement record in DB and shared preference
+     *
      * @param moveStartTime start time of this movement
      */
     private void addMovement(long moveStartTime) {
@@ -81,7 +85,8 @@ public class MovementDetector {
         }
     }
 
-    /** Helper method to  add end time of the latest movement being monitored,
+    /**
+     * Helper method to  add end time of the latest movement being monitored,
      * along with duration in seconds
      *
      * @param moveEndTime end time of the movement
@@ -104,8 +109,6 @@ public class MovementDetector {
     }
 
 
-
-
     private void deleteHistory() {
         SQLiteDatabase db = mOpenHelper.getWritableDatabase();
         db.delete(MovementEntry.TABLE_NAME, null, null);
@@ -120,4 +123,29 @@ public class MovementDetector {
                 .putLong(mContext.getString(R.string.start_time), startTime).commit();
     }
 
+    private void dummyDataInsert() {
+        SQLiteDatabase db = mOpenHelper.getWritableDatabase();
+        ArrayList<ContentValues> cvArray = new ArrayList<>();
+        long moveStartTime = 1477195644;
+        long moveEndTime = 1477195744;
+
+        for (int i = 0; i < 10; i++) {
+            ContentValues cv = new ContentValues();
+            int duration = (int) (moveEndTime - moveStartTime);
+
+            cv.put(MovementEntry.COLUMN_DATE, moveStartTime);
+            cv.put(MovementEntry.COLUMN_START, moveStartTime);
+            cv.put(MovementEntry.COLUMN_END, moveEndTime);
+            cv.put(MovementEntry.COLUMN_DURATION, duration);
+            cvArray.add(cv);
+
+            moveStartTime = moveStartTime + 500;
+            moveEndTime = moveStartTime + 500;
+
+        }
+
+        for (ContentValues cv : cvArray) {
+            long _id = db.insert(MovementEntry.TABLE_NAME, null, cv);
+        }
+    }
 }

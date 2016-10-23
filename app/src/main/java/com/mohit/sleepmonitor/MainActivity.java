@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -66,7 +65,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         Stetho.Initializer initializer = initializerBuilder.build();
         Stetho.initialize(initializer);
 
-        getSleepData();
+        getPieChartData();
         if (mDataList != null && !mDataList.isEmpty()) {
             PieGraph pieGraph = new PieGraph();
             pieGraph.setData(mDataList);
@@ -113,7 +112,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
      * calculate effective sleep and disturbance data
      * for pie chart
      */
-    private void getSleepData() {
+    private void getPieChartData() {
         SQLiteOpenHelper openHelper = new SleepMonitorDbHelper(this);
         SQLiteDatabase db = openHelper.getReadableDatabase();
 
@@ -132,9 +131,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         int disturbancePercent = (int) ((movementDuration * 100) / availaibleDuration);
         int effectivePercent = 100 - disturbancePercent;
         PieSection disturbanceSection = new PieSection(disturbancePercent, "Disturbance (" + disturbancePercent
-                + "%)", Color.RED);
+                + "%)", getResources().getColor(R.color.pie_orange));
         PieSection effectiveSection = new PieSection(effectivePercent, "Effective Sleep (" +
-                effectivePercent + "%)", Color.BLUE);
+                effectivePercent + "%)", getResources().getColor(R.color.pie_green));
 
         mDataList = new ArrayList<>();
         mDataList.add(disturbanceSection);
@@ -147,15 +146,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         SQLiteDatabase db = openHelper.getReadableDatabase();
 
         mMovementDataList = new ArrayList<>();
-        // Add Header Row in datalist
-        MovementItem headerItem = new MovementItem();
-        headerItem.setId("ID");
-        headerItem.setStartTime("Start Time");
-        headerItem.setEndTime("End Time");
-        headerItem.setDuration("Duration");
-        mMovementDataList.add(headerItem);
 
-        Cursor c = db.query(MovementEntry.TABLE_NAME, null, null, null, null, null, null);
+        Cursor c = db.query(MovementEntry.TABLE_NAME, null,
+                MovementEntry.COLUMN_DURATION + " > 0", null, null, null, null);
         int idxRowID = c.getColumnIndex(MovementEntry._ID);
         int idxStartTime = c.getColumnIndex(MovementEntry.COLUMN_START);
         int idxEndTime = c.getColumnIndex(MovementEntry.COLUMN_END);
@@ -167,7 +160,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 item.setId(c.getString(idxRowID));
                 item.setStartTime(c.getString(idxStartTime));
                 item.setEndTime(c.getString(idxEndTime));
-                item.setDuration(c.getString(idxDuration));
+                long duration = c.getLong(idxDuration) / 60;
+                item.setDuration(Long.toString(duration));
 
                 mMovementDataList.add(item);
             }

@@ -43,6 +43,8 @@ public class PieGraph {
         renderer.setLabelsColor(Color.BLACK);
         renderer.setLegendTextSize(20);
         renderer.setPanEnabled(false);
+        renderer.setZoomEnabled(false);
+        renderer.setExternalZoomEnabled(false);
 
         GraphicalView pieChartView = ChartFactory.getPieChartView(context, series, renderer);
 

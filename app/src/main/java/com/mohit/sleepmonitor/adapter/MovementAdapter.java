@@ -31,7 +31,7 @@ public class MovementAdapter extends RecyclerView.Adapter<MovementAdapter.ViewHo
     public MovementAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         int layoutID = -1;
 
-        layoutID = (viewType == VIEW_TYPE_HEADER) ? R.layout.view_header_item : R.layout.view_movement_item;
+        layoutID = R.layout.view_movement_item;
 
         View view = LayoutInflater.from(mContext).inflate(layoutID, parent, false);
         ViewHolder holder = new ViewHolder(view);
@@ -40,11 +40,11 @@ public class MovementAdapter extends RecyclerView.Adapter<MovementAdapter.ViewHo
 
     @Override
     public void onBindViewHolder(MovementAdapter.ViewHolder holder, int position) {
-        if (position > 0){
+      //  if (position > 0){
             holder.startTimeView.setText(Utility.getFriedlyDate(mDataList.get(position).getStartTime()));
             holder.endTimeView.setText(Utility.getFriedlyDate(mDataList.get(position).getEndTime()));
             holder.durationView.setText(mDataList.get(position).getDuration());
-        }
+      //  }
     }
 
     @Override
@@ -52,14 +52,7 @@ public class MovementAdapter extends RecyclerView.Adapter<MovementAdapter.ViewHo
         return mDataList.size();
     }
 
-    @Override
-    public int getItemViewType(int position) {
-        if (position == 0) {
-            return VIEW_TYPE_HEADER;
-        } else {
-            return VIEW_TYPE_ROW;
-        }
-    }
+
 
     static class ViewHolder extends RecyclerView.ViewHolder {
         TextView startTimeView;
